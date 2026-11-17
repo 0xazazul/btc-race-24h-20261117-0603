@@ -37,16 +37,21 @@ same data produce the same orders byte for byte.
 Dev-window measurement (kit's frozen 24h window, 2026-11-16T06:03Z to
 2026-11-17T06:03Z, BTC $64,461 -> $64,776, +0.49%, range $63,874-$65,467),
 exact replay validated against the official grade-local numbers for the
-house baselines to 6 decimals: net PnL +$29.25 on $1,000 (+2.93%),
-2 round trips (4 filled orders), max drawdown 0.7%, $1.63 of fees.
-Best house baseline (momentum) +$2.45. The same bot on the previous race's
-dev window (2026-11-14 to 2026-11-15, BTC -4.0%) makes +$33.30, so it is
-positive on both observed 24-hour windows. The dev window is two 24-hour
-samples, so these numbers say the bot clears the dev gate with margin on
-them; they are not a promise about the unseen race window. Block-bootstrap
-copies of the dev windows average near zero (mean -$2.00 on 50 copies of
-this window, 24% positive), which is the honest spread: the edge is the
-dip-rebound structure both real days showed, not a universal money machine.
+house baselines to 6 decimals, and the real bot driven through the wire
+protocol on both windows, twice each, byte-identical both runs: net PnL
++$29.25 on $1,000 (+2.93%), 2 round trips (4 filled orders), max drawdown
+0.7%, $1.63 of fees. Best house baseline (momentum) +$2.45. The same bot
+on the previous race's dev window (2026-11-14 to 2026-11-15, BTC -4.0%)
+makes +$33.30, so it is positive on both observed 24-hour windows. A
+take-profit / trailing-stop grid (TURN TP 250/300, DIP TP 150/300, trails
+100) was measured on the real bot on both windows before submitting: none
+beats the shipped parameters on both windows, so they stand. The dev
+window is two 24-hour samples, so these numbers say the bot clears the dev
+gate with margin on them; they are not a promise about the unseen race
+window. Block-bootstrap copies of the dev windows average near zero (mean
+-$2.00 on 50 copies of this window, 24% positive), which is the honest
+spread: the edge is the dip-rebound structure both real days showed, not a
+universal money machine.
 """
 
 import os
@@ -150,8 +155,10 @@ def _open(state, which, price):
 
 
 def _close(state):
-    global entry, leg, round_trips
+    global entry, peak, held, leg, round_trips
     entry = None
+    peak = 0
+    held = 0
     leg = None
     round_trips += 1
     return _sell_all(state)
